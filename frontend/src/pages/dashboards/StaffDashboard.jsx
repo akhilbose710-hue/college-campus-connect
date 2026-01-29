@@ -1,282 +1,1 @@
-import React, { useState, useEffect } from 'react';
-import { useAuth } from '../../context/AuthContext';
-import {
-  Users,
-  Calendar,
-  Clock,
-  ArrowRight,
-  Search,
-  TrendingUp,
-  LayoutGrid,
-  ShieldCheck,
-  UserCheck,
-  FileClock
-} from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
-import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
-
-const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
-const PERIODS = [1, 2, 3, 4, 5, 6];
-
-const attendanceData = [
-  { day: 'Mon', attendance: 93 },
-  { day: 'Tue', attendance: 95 },
-  { day: 'Wed', attendance: 91 },
-  { day: 'Thu', attendance: 96 },
-  { day: 'Fri', attendance: 94 }
-];
-
-export default function StaffDashboard() {
-  const { user, roles } = useAuth();
-  const navigate = useNavigate();
-  const [data, setData] = useState({ tutorship: null, timetable: [], students: [] });
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [searchQuery, setSearchQuery] = useState('');
-
-  const primaryRole = roles[0];
-  const isAdmin = roles.includes('HOD') || roles.includes('PRINCIPAL');
-
-  useEffect(() => {
-    fetchDashboardData();
-  }, [user]);
-
-  const fetchDashboardData = async () => {
-    try {
-      setLoading(true);
-      const res = await fetch(`http://localhost:5000/api/admin/staff-dashboard-data?staffId=${user.id}`);
-      if (!res.ok) throw new Error('Failed to fetch dashboard data');
-      const result = await res.json();
-      setData(result);
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const getSlot = (dayIdx, period) => {
-    return data.timetable.find(t => t.day_of_week === dayIdx && t.period === period);
-  };
-
-  const filteredStudents = data.students.filter(s =>
-    s.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    s.admission?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
-  if (loading) return (
-    <div className="flex h-[60vh] items-center justify-center">
-      <div className="flex flex-col items-center gap-3">
-        <div className="h-10 w-10 animate-spin rounded-full border-4 border-slate-200 border-t-primary-600" />
-        <p className="text-sm font-medium text-slate-500 font-sans">Syncing your workspace...</p>
-      </div>
-    </div>
-  );
-
-  return (
-    <div className="space-y-8 animate-in fade-in duration-500 font-sans">
-      {/* Header with Role Badge */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
-              Welcome back, {user?.user_metadata?.full_name || 'Faculty Member'}
-            </h1>
-            <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${isAdmin ? 'bg-indigo-50 text-indigo-700 border-indigo-100' : 'bg-emerald-50 text-emerald-700 border-emerald-100'
-              }`}>
-              {primaryRole}
-            </span>
-          </div>
-          <p className="text-sm text-slate-500 flex items-center gap-2 font-medium">
-            <Calendar size={14} className="text-primary-500" />
-            {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
-          </p>
-        </div>
-
-        {isAdmin && (
-          <div className="flex items-center gap-3">
-            <div className="text-right hidden sm:block">
-              <div className="text-xs font-bold text-slate-400 uppercase tracking-widest">Department Status</div>
-              <div className="text-sm font-bold text-emerald-600 flex items-center justify-end gap-1">
-                <TrendingUp size={14} /> 94% Capacity
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Admin Quick Stats (HOD/Principal Only) */}
-      {isAdmin && (
-        <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {[
-            { label: 'Classes Today', val: '18', icon: LayoutGrid, color: 'blue' },
-            { label: 'Active Faculty', val: '42', icon: ShieldCheck, color: 'indigo' },
-            { label: 'Avg Attendance', val: '92%', icon: UserCheck, color: 'emerald' },
-            { label: 'Pending Apps', val: '7', icon: FileClock, color: 'orange' }
-          ].map(stat => (
-            <div key={stat.label} className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all flex items-center gap-4">
-              <div className={`h-12 w-12 rounded-xl flex items-center justify-center bg-${stat.color}-50 text-${stat.color}-600`}>
-                <stat.icon size={22} />
-              </div>
-              <div>
-                <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest leading-none mb-1">{stat.label}</div>
-                <div className="text-xl font-bold text-slate-900">{stat.val}</div>
-              </div>
-            </div>
-          ))}
-        </section>
-      )}
-
-      {/* Dashboard Analytics Graph (Principal Only) */}
-      {primaryRole === 'PRINCIPAL' && (
-        <section className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
-          <div className="mb-6 flex items-center justify-between">
-            <div>
-              <h3 className="text-sm font-bold text-slate-900">Weekly Attendance Overview</h3>
-              <p className="text-[11px] text-slate-500 font-medium uppercase tracking-tight">Interactive Trend Analysis</p>
-            </div>
-            <button className="text-xs font-bold text-primary-600 hover:text-primary-700 transition-colors">Export Report</button>
-          </div>
-          <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={attendanceData} margin={{ left: -20, top: 10 }}>
-                <defs>
-                  <linearGradient id="attGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#6366f1" stopOpacity={0.15} />
-                    <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 600, fill: '#94a3b8' }} />
-                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 600, fill: '#94a3b8' }} />
-                <Tooltip
-                  contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', fontSize: '12px', fontWeight: 'bold' }}
-                  cursor={{ stroke: '#6366f1', strokeWidth: 2 }}
-                />
-                <Area type="monotone" dataKey="attendance" stroke="#6366f1" strokeWidth={3} fill="url(#attGrad)" />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
-        </section>
-      )}
-
-      {/* Tutorship Bar */}
-      {data.tutorship && (
-        <section className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden ring-1 ring-slate-100/50">
-          <div className="bg-slate-50/80 border-b border-slate-200 px-6 py-4 flex items-center justify-between backdrop-blur-sm">
-            <div className="flex items-center gap-3">
-              <div className="h-10 w-10 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-primary-600 shadow-sm ring-4 ring-primary-50">
-                <Users size={20} />
-              </div>
-              <div>
-                <h2 className="font-bold text-slate-900 leading-none">Tutorship: {data.tutorship.name}</h2>
-                <div className="flex items-center gap-1.5 mt-1">
-                  <span className="text-[10px] font-extrabold text-primary-600 tracking-tighter uppercase">{data.tutorship.batch}</span>
-                  <span className="h-1 w-1 rounded-full bg-slate-300" />
-                  <span className="text-[10px] font-bold text-slate-500 uppercase tracking-tighter">Sem {data.tutorship.semester}</span>
-                </div>
-              </div>
-            </div>
-            <div className="relative hidden sm:block">
-              <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-              <input
-                type="text"
-                placeholder="Find student..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9 pr-4 py-2 text-xs rounded-xl border border-slate-200 focus:ring-4 focus:ring-primary-500/10 outline-none w-56 transition-all font-medium"
-              />
-            </div>
-          </div>
-          <div className="p-4 overflow-x-auto whitespace-nowrap scrollbar-hide bg-slate-50/20">
-            <div className="flex gap-4 min-w-min px-2 py-1">
-              {filteredStudents.map(student => (
-                <div key={student.id} className="inline-flex items-center gap-3 bg-white border border-slate-200 px-4 py-3 rounded-2xl min-w-[210px] group hover:border-primary-200 hover:ring-4 hover:ring-primary-50 transition-all cursor-pointer shadow-sm active:scale-95">
-                  <div className="h-10 w-10 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center text-primary-600 font-bold text-sm shadow-inner group-hover:bg-primary-600 group-hover:text-white transition-colors">
-                    {student.name?.[0]}
-                  </div>
-                  <div className="min-w-0">
-                    <div className="text-xs font-bold text-slate-900 group-hover:text-primary-700 transition-colors truncate">{student.name}</div>
-                    <div className="text-[10px] text-slate-500 font-bold tracking-tight uppercase">{student.admission}</div>
-                  </div>
-                </div>
-              ))}
-              {filteredStudents.length === 0 && (
-                <div className="text-xs text-slate-400 py-4 italic px-4 font-semibold">No students found matching your search.</div>
-              )}
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* My Schedule Grid */}
-      <section className="space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded-lg bg-primary-50 text-primary-600 flex items-center justify-center">
-              <Clock size={18} />
-            </div>
-            <h2 className="text-lg font-bold text-slate-900 tracking-tight">Teaching Schedule</h2>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden ring-1 ring-slate-100/50">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="bg-slate-50/50 border-b border-slate-100">
-                  <th className="p-5 text-[10px] font-bold uppercase tracking-widest text-slate-400 w-28 border-r border-slate-100">Day</th>
-                  {PERIODS.map(p => (
-                    <th key={p} className="p-5 text-[10px] font-bold uppercase tracking-widest text-slate-500 text-center border-r border-slate-100 last:border-r-0">Period {p}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {DAYS.map((day, dIdx) => (
-                  <tr key={day} className="group hover:bg-slate-50/50 transition-colors">
-                    <td className="p-5 font-bold text-slate-600 text-[11px] uppercase tracking-wider border-r border-slate-100 bg-slate-50/20">{day}</td>
-                    {PERIODS.map(p => {
-                      const slot = getSlot(dIdx, p);
-                      return (
-                        <td key={p} className="p-3 border-r border-slate-100 last:border-r-0 h-28 min-w-[160px]">
-                          {slot ? (
-                            <button
-                              onClick={() => navigate(`/mark-attendance?classId=${slot.class_id}&period=${p}&subjectId=${slot.subject_id}&day=${dIdx}`)}
-                              className="w-full h-full p-4 rounded-2xl bg-white text-left border border-slate-200 hover:border-primary-400 hover:shadow-xl hover:shadow-primary-100 hover:scale-[1.03] transition-all group/slot relative overflow-hidden ring-0 hover:ring-2 hover:ring-primary-100"
-                            >
-                              <div className="absolute top-0 right-0 p-2 opacity-0 group-hover/slot:opacity-100 transition-all translate-x-2 group-hover/slot:translate-x-0">
-                                <ArrowRight size={14} className="text-primary-600" />
-                              </div>
-                              <div className="text-[9px] font-black text-primary-600 uppercase tracking-tighter mb-1.5 flex items-center gap-1">
-                                <span className="h-1.5 w-1.5 rounded-full bg-primary-500" />
-                                {slot.subject?.code}
-                              </div>
-                              <div className="text-xs font-bold text-slate-900 line-clamp-2 leading-snug mb-2 min-h-[2.5rem]">{slot.subject?.name}</div>
-                              <div className="flex items-center justify-between text-[10px] font-bold text-slate-400 uppercase tracking-tight">
-                                <div className="flex items-center gap-1">
-                                  <LayoutGrid size={11} className="text-slate-300" />
-                                  {slot.class?.name}
-                                </div>
-                                {slot.class?.semester && (
-                                  <span className="bg-slate-100 px-1.5 py-0.5 rounded text-[9px] text-slate-500">S{slot.class.semester}</span>
-                                )}
-                              </div>
-                            </button>
-                          ) : (
-                            <div className="w-full h-full border-2 border-dashed border-slate-100 rounded-2xl flex items-center justify-center opacity-40 group-hover:opacity-100 transition-opacity">
-                              <span className="text-[9px] font-black text-slate-300 uppercase letter-spacing-2">Free</span>
-                            </div>
-                          )}
-                        </td>
-                      );
-                    })}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </section>
-    </div>
-  );
-}
+import React, { useState, useEffect } from 'react';import { useAuth } from '../../context/AuthContext';import {  Users,  Calendar,  Clock,  ArrowRight,  Search,  TrendingUp,  LayoutGrid,  ShieldCheck,  UserCheck,  FileClock} from 'lucide-react';import { useNavigate } from 'react-router-dom';import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];const PERIODS = [1, 2, 3, 4, 5, 6];const attendanceData = [  { day: 'Mon', attendance: 93 },  { day: 'Tue', attendance: 95 },  { day: 'Wed', attendance: 91 },  { day: 'Thu', attendance: 96 },  { day: 'Fri', attendance: 94 }];export default function StaffDashboard() {  const { user, roles } = useAuth();  const navigate = useNavigate();  const [data, setData] = useState({ tutorship: null, timetable: [], students: [] });  const [loading, setLoading] = useState(true);  const [error, setError] = useState(null);  const [searchQuery, setSearchQuery] = useState('');  const primaryRole = roles[0];  const isAdmin = roles.includes('HOD') || roles.includes('PRINCIPAL');  useEffect(() => {    fetchDashboardData();  }, [user]);  const fetchDashboardData = async () => {    try {      setLoading(true);      const res = await fetch(`http://localhost:5000/api/admin/staff-dashboard-data?staffId=${user.id}`);      if (!res.ok) throw new Error('Failed to fetch dashboard data');      const result = await res.json();      setData(result);    } catch (err) {      setError(err.message);    } finally {      setLoading(false);    }  };  const getSlot = (dayIdx, period) => {    return data.timetable.find(t => t.day_of_week === dayIdx && t.period === period);  };  const filteredStudents = data.students.filter(s =>    s.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||    s.admission?.toLowerCase().includes(searchQuery.toLowerCase())  );  if (loading) return (    <div className="flex h-[60vh] items-center justify-center">      <div className="flex flex-col items-center gap-3">        <div className="h-10 w-10 animate-spin rounded-full border-4 border-slate-200 border-t-primary-600" />        <p className="text-sm font-medium text-slate-500 font-sans">Syncing your workspace...</p>      </div>    </div>  );  return (    <div className="space-y-8 animate-in fade-in duration-500 font-sans">      {}      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">        <div>          <div className="flex items-center gap-2 mb-1">            <h1 className="text-2xl font-bold text-slate-900 tracking-tight">              Welcome back, {user?.user_metadata?.full_name || 'Faculty Member'}            </h1>            <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${isAdmin ? 'bg-indigo-50 text-indigo-700 border-indigo-100' : 'bg-emerald-50 text-emerald-700 border-emerald-100'              }`}>              {primaryRole}            </span>          </div>          <p className="text-sm text-slate-500 flex items-center gap-2 font-medium">            <Calendar size={14} className="text-primary-500" />            {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}          </p>        </div>        {isAdmin && (          <div className="flex items-center gap-3">            <div className="text-right hidden sm:block">              <div className="text-xs font-bold text-slate-400 uppercase tracking-widest">Department Status</div>              <div className="text-sm font-bold text-emerald-600 flex items-center justify-end gap-1">                <TrendingUp size={14} /> 94% Capacity              </div>            </div>          </div>        )}      </div>      {}      {isAdmin && (        <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">          {[            { label: 'Classes Today', val: '18', icon: LayoutGrid, color: 'blue' },            { label: 'Active Faculty', val: '42', icon: ShieldCheck, color: 'indigo' },            { label: 'Avg Attendance', val: '92%', icon: UserCheck, color: 'emerald' },            { label: 'Pending Apps', val: '7', icon: FileClock, color: 'orange' }          ].map(stat => (            <div key={stat.label} className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all flex items-center gap-4">              <div className={`h-12 w-12 rounded-xl flex items-center justify-center bg-${stat.color}-50 text-${stat.color}-600`}>                <stat.icon size={22} />              </div>              <div>                <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest leading-none mb-1">{stat.label}</div>                <div className="text-xl font-bold text-slate-900">{stat.val}</div>              </div>            </div>          ))}        </section>      )}      {}      {primaryRole === 'PRINCIPAL' && (        <section className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">          <div className="mb-6 flex items-center justify-between">            <div>              <h3 className="text-sm font-bold text-slate-900">Weekly Attendance Overview</h3>              <p className="text-[11px] text-slate-500 font-medium uppercase tracking-tight">Interactive Trend Analysis</p>            </div>            <button className="text-xs font-bold text-primary-600 hover:text-primary-700 transition-colors">Export Report</button>          </div>          <div className="h-64">            <ResponsiveContainer width="100%" height="100%">              <AreaChart data={attendanceData} margin={{ left: -20, top: 10 }}>                <defs>                  <linearGradient id="attGrad" x1="0" y1="0" x2="0" y2="1">                    <stop offset="5%" stopColor="#6366f1" stopOpacity={0.15} />                    <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />                  </linearGradient>                </defs>                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />                <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 600, fill: '#94a3b8' }} />                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 600, fill: '#94a3b8' }} />                <Tooltip                  contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', fontSize: '12px', fontWeight: 'bold' }}                  cursor={{ stroke: '#6366f1', strokeWidth: 2 }}                />                <Area type="monotone" dataKey="attendance" stroke="#6366f1" strokeWidth={3} fill="url(#attGrad)" />              </AreaChart>            </ResponsiveContainer>          </div>        </section>      )}      {}      {data.tutorship && (        <section className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden ring-1 ring-slate-100/50">          <div className="bg-slate-50/80 border-b border-slate-200 px-6 py-4 flex items-center justify-between backdrop-blur-sm">            <div className="flex items-center gap-3">              <div className="h-10 w-10 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-primary-600 shadow-sm ring-4 ring-primary-50">                <Users size={20} />              </div>              <div>                <h2 className="font-bold text-slate-900 leading-none">Tutorship: {data.tutorship.name}</h2>                <div className="flex items-center gap-1.5 mt-1">                  <span className="text-[10px] font-extrabold text-primary-600 tracking-tighter uppercase">{data.tutorship.batch}</span>                  <span className="h-1 w-1 rounded-full bg-slate-300" />                  <span className="text-[10px] font-bold text-slate-500 uppercase tracking-tighter">Sem {data.tutorship.semester}</span>                </div>              </div>            </div>            <div className="relative hidden sm:block">              <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />              <input                type="text"                placeholder="Find student..."                value={searchQuery}                onChange={(e) => setSearchQuery(e.target.value)}                className="pl-9 pr-4 py-2 text-xs rounded-xl border border-slate-200 focus:ring-4 focus:ring-primary-500/10 outline-none w-56 transition-all font-medium"              />            </div>          </div>          <div className="p-4 overflow-x-auto whitespace-nowrap scrollbar-hide bg-slate-50/20">            <div className="flex gap-4 min-w-min px-2 py-1">              {filteredStudents.map(student => (                <div key={student.id} className="inline-flex items-center gap-3 bg-white border border-slate-200 px-4 py-3 rounded-2xl min-w-[210px] group hover:border-primary-200 hover:ring-4 hover:ring-primary-50 transition-all cursor-pointer shadow-sm active:scale-95">                  <div className="h-10 w-10 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center text-primary-600 font-bold text-sm shadow-inner group-hover:bg-primary-600 group-hover:text-white transition-colors">                    {student.name?.[0]}                  </div>                  <div className="min-w-0">                    <div className="text-xs font-bold text-slate-900 group-hover:text-primary-700 transition-colors truncate">{student.name}</div>                    <div className="text-[10px] text-slate-500 font-bold tracking-tight uppercase">{student.admission}</div>                  </div>                </div>              ))}              {filteredStudents.length === 0 && (                <div className="text-xs text-slate-400 py-4 italic px-4 font-semibold">No students found matching your search.</div>              )}            </div>          </div>        </section>      )}      {}      <section className="space-y-4">        <div className="flex items-center justify-between">          <div className="flex items-center gap-2">            <div className="h-8 w-8 rounded-lg bg-primary-50 text-primary-600 flex items-center justify-center">              <Clock size={18} />            </div>            <h2 className="text-lg font-bold text-slate-900 tracking-tight">Teaching Schedule</h2>          </div>        </div>        <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden ring-1 ring-slate-100/50">          <div className="overflow-x-auto">            <table className="w-full text-left border-collapse">              <thead>                <tr className="bg-slate-50/50 border-b border-slate-100">                  <th className="p-5 text-[10px] font-bold uppercase tracking-widest text-slate-400 w-28 border-r border-slate-100">Day</th>                  {PERIODS.map(p => (                    <th key={p} className="p-5 text-[10px] font-bold uppercase tracking-widest text-slate-500 text-center border-r border-slate-100 last:border-r-0">Period {p}</th>                  ))}                </tr>              </thead>              <tbody className="divide-y divide-slate-100">                {DAYS.map((day, dIdx) => (                  <tr key={day} className="group hover:bg-slate-50/50 transition-colors">                    <td className="p-5 font-bold text-slate-600 text-[11px] uppercase tracking-wider border-r border-slate-100 bg-slate-50/20">{day}</td>                    {PERIODS.map(p => {                      const slot = getSlot(dIdx, p);                      return (                        <td key={p} className="p-3 border-r border-slate-100 last:border-r-0 h-28 min-w-[160px]">                          {slot ? (                            <button                              onClick={() => navigate(`/mark-attendance?classId=${slot.class_id}&period=${p}&subjectId=${slot.subject_id}&day=${dIdx}`)}                              className="w-full h-full p-4 rounded-2xl bg-white text-left border border-slate-200 hover:border-primary-400 hover:shadow-xl hover:shadow-primary-100 hover:scale-[1.03] transition-all group/slot relative overflow-hidden ring-0 hover:ring-2 hover:ring-primary-100"                            >                              <div className="absolute top-0 right-0 p-2 opacity-0 group-hover/slot:opacity-100 transition-all translate-x-2 group-hover/slot:translate-x-0">                                <ArrowRight size={14} className="text-primary-600" />                              </div>                              <div className="text-[9px] font-black text-primary-600 uppercase tracking-tighter mb-1.5 flex items-center gap-1">                                <span className="h-1.5 w-1.5 rounded-full bg-primary-500" />                                {slot.subject?.code}                              </div>                              <div className="text-xs font-bold text-slate-900 line-clamp-2 leading-snug mb-2 min-h-[2.5rem]">{slot.subject?.name}</div>                              <div className="flex items-center justify-between text-[10px] font-bold text-slate-400 uppercase tracking-tight">                                <div className="flex items-center gap-1">                                  <LayoutGrid size={11} className="text-slate-300" />                                  {slot.class?.name}                                </div>                                {slot.class?.semester && (                                  <span className="bg-slate-100 px-1.5 py-0.5 rounded text-[9px] text-slate-500">S{slot.class.semester}</span>                                )}                              </div>                            </button>                          ) : (                            <div className="w-full h-full border-2 border-dashed border-slate-100 rounded-2xl flex items-center justify-center opacity-40 group-hover:opacity-100 transition-opacity">                              <span className="text-[9px] font-black text-slate-300 uppercase letter-spacing-2">Free</span>                            </div>                          )}                        </td>                      );                    })}                  </tr>                ))}              </tbody>            </table>          </div>        </div>      </section>    </div>  );}

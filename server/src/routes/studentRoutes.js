@@ -1,10 +1,1 @@
-const express = require('express');
-const router = express.Router();
-const studentController = require('../controllers/studentController');
-
-router.get('/dashboard', studentController.getDashboardData);
-router.get('/courses', studentController.getCourses);
-router.get('/timetable', studentController.getTimetable);
-router.post('/face-register', studentController.registerFace);
-
-module.exports = router;
+const express = require('express');const router = express.Router();const studentController = require('../controllers/studentController');router.get('/dashboard', studentController.getDashboardData);router.get('/courses', studentController.getCourses);router.get('/timetable', studentController.getTimetable);router.post('/face-register', studentController.registerFace);module.exports = router;
