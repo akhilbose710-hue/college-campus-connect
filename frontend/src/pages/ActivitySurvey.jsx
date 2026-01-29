@@ -1,70 +1,1 @@
-import React, { useState } from 'react';
-
-export default function ActivitySurvey() {
-    const [submitted, setSubmitted] = useState(false);
-
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        setSubmitted(true);
-        setTimeout(() => setSubmitted(false), 3000);
-    };
-
-    return (
-        <div className="max-w-3xl mx-auto space-y-6">
-            <div className="space-y-2">
-                <h1 className="text-2xl font-bold text-slate-800">Activity Survey</h1>
-                <p className="text-slate-500">Share your feedback relative to recent campus activities</p>
-            </div>
-
-            <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-                {submitted ? (
-                    <div className="flex h-64 flex-col items-center justify-center space-y-4 text-center">
-                        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-green-100 text-green-600">
-                            <svg className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                            </svg>
-                        </div>
-                        <h3 className="text-lg font-semibold text-slate-900">Thank you!</h3>
-                        <p className="text-slate-600">Your response has been recorded.</p>
-                    </div>
-                ) : (
-                    <form onSubmit={handleSubmit} className="space-y-6">
-                        <div>
-                            <label className="mb-2 block text-sm font-medium text-slate-700">Which activity did you participate in?</label>
-                            <select className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none ring-primary-500 focus:ring-2">
-                                <option>Tech Fest 2025</option>
-                                <option>Sports Day</option>
-                                <option>Cultural Night</option>
-                                <option>Coding Hackathon</option>
-                            </select>
-                        </div>
-
-                        <div>
-                            <label className="mb-2 block text-sm font-medium text-slate-700">How would you rate the organization?</label>
-                            <div className="flex gap-4">
-                                {[1, 2, 3, 4, 5].map((rating) => (
-                                    <label key={rating} className="flex cursor-pointer items-center gap-2">
-                                        <input type="radio" name="rating" className="h-4 w-4 text-primary-600" />
-                                        <span className="text-sm text-slate-600">{rating}</span>
-                                    </label>
-                                ))}
-                            </div>
-                        </div>
-
-                        <div>
-                            <label className="mb-2 block text-sm font-medium text-slate-700">Suggestions for improvement</label>
-                            <textarea
-                                className="h-32 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none ring-primary-500 focus:ring-2"
-                                placeholder="Tell us what you think..."
-                            />
-                        </div>
-
-                        <button type="submit" className="w-full rounded-lg bg-primary-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-primary-700">
-                            Submit Survey
-                        </button>
-                    </form>
-                )}
-            </div>
-        </div>
-    );
-}
+import React, { useState } from 'react';export default function ActivitySurvey() {    const [submitted, setSubmitted] = useState(false);    const handleSubmit = (e) => {        e.preventDefault();        setSubmitted(true);        setTimeout(() => setSubmitted(false), 3000);    };    return (        <div className="max-w-3xl mx-auto space-y-6">            <div className="space-y-2">                <h1 className="text-2xl font-bold text-slate-800">Activity Survey</h1>                <p className="text-slate-500">Share your feedback relative to recent campus activities</p>            </div>            <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">                {submitted ? (                    <div className="flex h-64 flex-col items-center justify-center space-y-4 text-center">                        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-green-100 text-green-600">                            <svg className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />                            </svg>                        </div>                        <h3 className="text-lg font-semibold text-slate-900">Thank you!</h3>                        <p className="text-slate-600">Your response has been recorded.</p>                    </div>                ) : (                    <form onSubmit={handleSubmit} className="space-y-6">                        <div>                            <label className="mb-2 block text-sm font-medium text-slate-700">Which activity did you participate in?</label>                            <select className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none ring-primary-500 focus:ring-2">                                <option>Tech Fest 2025</option>                                <option>Sports Day</option>                                <option>Cultural Night</option>                                <option>Coding Hackathon</option>                            </select>                        </div>                        <div>                            <label className="mb-2 block text-sm font-medium text-slate-700">How would you rate the organization?</label>                            <div className="flex gap-4">                                {[1, 2, 3, 4, 5].map((rating) => (                                    <label key={rating} className="flex cursor-pointer items-center gap-2">                                        <input type="radio" name="rating" className="h-4 w-4 text-primary-600" />                                        <span className="text-sm text-slate-600">{rating}</span>                                    </label>                                ))}                            </div>                        </div>                        <div>                            <label className="mb-2 block text-sm font-medium text-slate-700">Suggestions for improvement</label>                            <textarea                                className="h-32 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none ring-primary-500 focus:ring-2"                                placeholder="Tell us what you think..."                            />                        </div>                        <button type="submit" className="w-full rounded-lg bg-primary-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-primary-700">                            Submit Survey                        </button>                    </form>                )}            </div>        </div>    );}

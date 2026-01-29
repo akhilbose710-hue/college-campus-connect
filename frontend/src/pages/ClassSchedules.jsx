@@ -1,72 +1,1 @@
-import React from 'react';
-
-export default function ClassSchedules() {
-    const schedule = [
-        { time: '09:00 AM', mon: 'CS101', tue: 'MATH202', wed: 'CS101', thu: 'PHY101', fri: 'LAB' },
-        { time: '10:00 AM', mon: 'CS101', tue: 'Start Up', wed: 'CS101', thu: 'PHY101', fri: 'LAB' },
-        { time: '11:00 AM', mon: 'ENG101', tue: 'HIS101', wed: 'MATH202', thu: 'Free', fri: 'Mentoring' },
-        { time: '12:00 PM', mon: 'Lunch', tue: 'Lunch', wed: 'Lunch', thu: 'Lunch', fri: 'Lunch' },
-        { time: '01:00 PM', mon: 'PHY101', tue: 'CS Lab', wed: 'Library', thu: 'MATH202', fri: 'Club Activity' },
-        { time: '02:00 PM', mon: 'PHY101', tue: 'CS Lab', wed: 'Sports', thu: 'Free', fri: 'Club Activity' },
-    ];
-
-    return (
-        <div className="space-y-6">
-            <div className="flex items-center justify-between">
-                <h1 className="text-2xl font-bold text-slate-800">Class Schedule</h1>
-                <button className="rounded-lg bg-white px-4 py-2 text-sm font-medium text-slate-600 shadow-sm ring-1 ring-slate-200 hover:bg-slate-50">
-                    Download PDF
-                </button>
-            </div>
-
-            <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-                <div className="overflow-x-auto">
-                    <table className="w-full text-left text-sm text-slate-600">
-                        <thead className="bg-slate-50 text-xs uppercase text-slate-500">
-                            <tr>
-                                <th className="px-6 py-4 font-semibold">Time</th>
-                                <th className="px-6 py-4 font-semibold">Monday</th>
-                                <th className="px-6 py-4 font-semibold">Tuesday</th>
-                                <th className="px-6 py-4 font-semibold">Wednesday</th>
-                                <th className="px-6 py-4 font-semibold">Thursday</th>
-                                <th className="px-6 py-4 font-semibold">Friday</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-100">
-                            {schedule.map((slot, index) => (
-                                <tr key={index} className="hover:bg-slate-50">
-                                    <td className="whitespace-nowrap px-6 py-4 font-medium text-slate-900">{slot.time}</td>
-                                    <td className="px-6 py-4">
-                                        <span className={`inline-block rounded px-2 py-1 text-xs font-semibold ${slot.mon === 'Lunch' ? 'bg-amber-100 text-amber-700' : 'bg-primary-50 text-primary-700'}`}>
-                                            {slot.mon}
-                                        </span>
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <span className={`inline-block rounded px-2 py-1 text-xs font-semibold ${slot.tue === 'Lunch' ? 'bg-amber-100 text-amber-700' : 'bg-blue-50 text-blue-700'}`}>
-                                            {slot.tue}
-                                        </span>
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <span className={`inline-block rounded px-2 py-1 text-xs font-semibold ${slot.wed === 'Lunch' ? 'bg-amber-100 text-amber-700' : 'bg-purple-50 text-purple-700'}`}>
-                                            {slot.wed}
-                                        </span>
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <span className={`inline-block rounded px-2 py-1 text-xs font-semibold ${slot.thu === 'Lunch' ? 'bg-amber-100 text-amber-700' : 'bg-emerald-50 text-emerald-700'}`}>
-                                            {slot.thu}
-                                        </span>
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <span className={`inline-block rounded px-2 py-1 text-xs font-semibold ${slot.fri === 'Lunch' ? 'bg-amber-100 text-amber-700' : 'bg-rose-50 text-rose-700'}`}>
-                                            {slot.fri}
-                                        </span>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    );
-}
+import React from 'react';export default function ClassSchedules() {    const schedule = [        { time: '09:00 AM', mon: 'CS101', tue: 'MATH202', wed: 'CS101', thu: 'PHY101', fri: 'LAB' },        { time: '10:00 AM', mon: 'CS101', tue: 'Start Up', wed: 'CS101', thu: 'PHY101', fri: 'LAB' },        { time: '11:00 AM', mon: 'ENG101', tue: 'HIS101', wed: 'MATH202', thu: 'Free', fri: 'Mentoring' },        { time: '12:00 PM', mon: 'Lunch', tue: 'Lunch', wed: 'Lunch', thu: 'Lunch', fri: 'Lunch' },        { time: '01:00 PM', mon: 'PHY101', tue: 'CS Lab', wed: 'Library', thu: 'MATH202', fri: 'Club Activity' },        { time: '02:00 PM', mon: 'PHY101', tue: 'CS Lab', wed: 'Sports', thu: 'Free', fri: 'Club Activity' },    ];    return (        <div className="space-y-6">            <div className="flex items-center justify-between">                <h1 className="text-2xl font-bold text-slate-800">Class Schedule</h1>                <button className="rounded-lg bg-white px-4 py-2 text-sm font-medium text-slate-600 shadow-sm ring-1 ring-slate-200 hover:bg-slate-50">                    Download PDF                </button>            </div>            <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">                <div className="overflow-x-auto">                    <table className="w-full text-left text-sm text-slate-600">                        <thead className="bg-slate-50 text-xs uppercase text-slate-500">                            <tr>                                <th className="px-6 py-4 font-semibold">Time</th>                                <th className="px-6 py-4 font-semibold">Monday</th>                                <th className="px-6 py-4 font-semibold">Tuesday</th>                                <th className="px-6 py-4 font-semibold">Wednesday</th>                                <th className="px-6 py-4 font-semibold">Thursday</th>                                <th className="px-6 py-4 font-semibold">Friday</th>                            </tr>                        </thead>                        <tbody className="divide-y divide-slate-100">                            {schedule.map((slot, index) => (                                <tr key={index} className="hover:bg-slate-50">                                    <td className="whitespace-nowrap px-6 py-4 font-medium text-slate-900">{slot.time}</td>                                    <td className="px-6 py-4">                                        <span className={`inline-block rounded px-2 py-1 text-xs font-semibold ${slot.mon === 'Lunch' ? 'bg-amber-100 text-amber-700' : 'bg-primary-50 text-primary-700'}`}>                                            {slot.mon}                                        </span>                                    </td>                                    <td className="px-6 py-4">                                        <span className={`inline-block rounded px-2 py-1 text-xs font-semibold ${slot.tue === 'Lunch' ? 'bg-amber-100 text-amber-700' : 'bg-blue-50 text-blue-700'}`}>                                            {slot.tue}                                        </span>                                    </td>                                    <td className="px-6 py-4">                                        <span className={`inline-block rounded px-2 py-1 text-xs font-semibold ${slot.wed === 'Lunch' ? 'bg-amber-100 text-amber-700' : 'bg-purple-50 text-purple-700'}`}>                                            {slot.wed}                                        </span>                                    </td>                                    <td className="px-6 py-4">                                        <span className={`inline-block rounded px-2 py-1 text-xs font-semibold ${slot.thu === 'Lunch' ? 'bg-amber-100 text-amber-700' : 'bg-emerald-50 text-emerald-700'}`}>                                            {slot.thu}                                        </span>                                    </td>                                    <td className="px-6 py-4">                                        <span className={`inline-block rounded px-2 py-1 text-xs font-semibold ${slot.fri === 'Lunch' ? 'bg-amber-100 text-amber-700' : 'bg-rose-50 text-rose-700'}`}>                                            {slot.fri}                                        </span>                                    </td>                                </tr>                            ))}                        </tbody>                    </table>                </div>            </div>        </div>    );}

@@ -1,44 +1,1 @@
-import React from 'react';
-
-export default function ApplicationForms() {
-    const forms = [
-        { id: 1, title: 'Bonafide Certificate', desc: 'Request for detailed student bonafide certificate', status: 'Available' },
-        { id: 2, title: 'Scholarship Application', desc: 'Merit-based scholarship for semester 4', status: 'Closing Soon' },
-        { id: 3, title: 'Hostel Accommodation', desc: 'Request for hostel room allocation', status: 'Waitlist' },
-        { id: 4, title: 'ID Card Replacement', desc: 'Request new ID card (Lost/Damaged)', status: 'Available' },
-        { id: 5, title: 'Exam Re-valuation', desc: 'Apply for re-checking of semester answer sheets', status: 'Closed' },
-    ];
-
-    return (
-        <div className="space-y-6">
-            <div className="space-y-2">
-                <h1 className="text-2xl font-bold text-slate-800">Application Forms</h1>
-                <p className="text-slate-500">Download and submit digital forms</p>
-            </div>
-
-            <div className="grid gap-4 md:grid-cols-2">
-                {forms.map((form) => (
-                    <div key={form.id} className="flex flex-col justify-between rounded-xl border border-slate-200 bg-white p-5 shadow-sm hover:shadow-md transition-shadow">
-                        <div>
-                            <div className="mb-2 flex items-center justify-between">
-                                <h3 className="font-semibold text-slate-900">{form.title}</h3>
-                                <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide
-                            ${form.status === 'Available' ? 'bg-green-100 text-green-700' :
-                                        form.status === 'Closing Soon' ? 'bg-amber-100 text-amber-700' :
-                                            form.status === 'Closed' ? 'bg-slate-100 text-slate-500' : 'bg-blue-100 text-blue-700'}`}>
-                                    {form.status}
-                                </span>
-                            </div>
-                            <p className="text-sm text-slate-500 mb-4">{form.desc}</p>
-                        </div>
-                        <button
-                            disabled={form.status === 'Closed'}
-                            className="w-full rounded-lg border border-slate-200 bg-slate-50 py-2 text-sm font-medium text-slate-700 hover:bg-white hover:text-primary-600 disabled:opacity-50 disabled:cursor-not-allowed">
-                            {form.status === 'Closed' ? 'Applications Closed' : 'View & Apply'}
-                        </button>
-                    </div>
-                ))}
-            </div>
-        </div>
-    );
-}
+import React from 'react';export default function ApplicationForms() {    const forms = [        { id: 1, title: 'Bonafide Certificate', desc: 'Request for detailed student bonafide certificate', status: 'Available' },        { id: 2, title: 'Scholarship Application', desc: 'Merit-based scholarship for semester 4', status: 'Closing Soon' },        { id: 3, title: 'Hostel Accommodation', desc: 'Request for hostel room allocation', status: 'Waitlist' },        { id: 4, title: 'ID Card Replacement', desc: 'Request new ID card (Lost/Damaged)', status: 'Available' },        { id: 5, title: 'Exam Re-valuation', desc: 'Apply for re-checking of semester answer sheets', status: 'Closed' },    ];    return (        <div className="space-y-6">            <div className="space-y-2">                <h1 className="text-2xl font-bold text-slate-800">Application Forms</h1>                <p className="text-slate-500">Download and submit digital forms</p>            </div>            <div className="grid gap-4 md:grid-cols-2">                {forms.map((form) => (                    <div key={form.id} className="flex flex-col justify-between rounded-xl border border-slate-200 bg-white p-5 shadow-sm hover:shadow-md transition-shadow">                        <div>                            <div className="mb-2 flex items-center justify-between">                                <h3 className="font-semibold text-slate-900">{form.title}</h3>                                <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide                            ${form.status === 'Available' ? 'bg-green-100 text-green-700' :                                        form.status === 'Closing Soon' ? 'bg-amber-100 text-amber-700' :                                            form.status === 'Closed' ? 'bg-slate-100 text-slate-500' : 'bg-blue-100 text-blue-700'}`}>                                    {form.status}                                </span>                            </div>                            <p className="text-sm text-slate-500 mb-4">{form.desc}</p>                        </div>                        <button                            disabled={form.status === 'Closed'}                            className="w-full rounded-lg border border-slate-200 bg-slate-50 py-2 text-sm font-medium text-slate-700 hover:bg-white hover:text-primary-600 disabled:opacity-50 disabled:cursor-not-allowed">                            {form.status === 'Closed' ? 'Applications Closed' : 'View & Apply'}                        </button>                    </div>                ))}            </div>        </div>    );}

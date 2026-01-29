@@ -14,29 +14,22 @@ import {
   ClipboardList,
   LogOut
 } from 'lucide-react';
-
 function classNames(...classes) {
   return classes.filter(Boolean).join(' ');
 }
-
 export default function Layout() {
   const { user, roles, logout } = useAuth();
   const navigate = useNavigate();
-
   const primaryRole = roles[0];
-
   const navItems = [
     { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { to: '/attendance', label: 'Attendance', icon: CalendarCheck },
     { to: '/reports', label: 'Reports', icon: BarChart3 }
   ];
-
   if (roles.includes('SUPER_ADMIN') || roles.includes('IT_ADMIN')) {
     navItems.push({ to: '/admin', label: 'Admin', icon: Shield });
     navItems.push({ to: '/devices', label: 'Devices', icon: Monitor });
   }
-
-  // Student Specific Sidebar Items
   if (roles.includes('STUDENT')) {
     navItems.push({ to: '/my-courses', label: 'My Courses', icon: BookOpen });
     navItems.push({ to: '/schedule', label: 'Class Schedules', icon: CalendarDays });
@@ -44,7 +37,6 @@ export default function Layout() {
     navItems.push({ to: '/forms', label: 'Forms & Certs', icon: FileText });
     navItems.push({ to: '/survey', label: 'Activity Survey', icon: ClipboardList });
   }
-
   const handleLogout = async () => {
     try {
       await logout();
@@ -54,7 +46,6 @@ export default function Layout() {
       navigate('/login');
     }
   };
-
   return (
     <div className="flex min-h-screen bg-slate-50">
       <aside className="hidden w-64 flex-shrink-0 border-r border-slate-200 bg-white/80 px-4 py-6 md:block">
@@ -94,7 +85,6 @@ export default function Layout() {
           ))}
         </nav>
       </aside>
-
       <div className="flex min-h-screen flex-1 flex-col">
         <header className="flex items-center justify-between border-b border-slate-200 bg-white/80 px-4 py-3 shadow-sm">
           <div className="flex items-center gap-2 md:hidden">

@@ -1,55 +1,1 @@
-import React from 'react';
-
-export default function MyCourses() {
-    const courses = [
-        { id: 1, code: 'CS101', name: 'Intro to Computer Science', instructor: 'Prof. Smith', credits: 4, progress: 75, grade: 'A' },
-        { id: 2, code: 'MATH202', name: 'Linear Algebra', instructor: 'Dr. Johnson', credits: 3, progress: 60, grade: 'B+' },
-        { id: 3, code: 'PHY101', name: 'Physics I', instructor: 'Dr. Brown', credits: 4, progress: 45, grade: 'A-' },
-        { id: 4, code: 'ENG101', name: 'English Composition', instructor: 'Ms. Davis', credits: 2, progress: 90, grade: 'A' },
-        { id: 5, code: 'HIS101', name: 'World History', instructor: 'Mr. Wilson', credits: 3, progress: 30, grade: 'B' },
-    ];
-
-    return (
-        <div className="space-y-6">
-            <div className="flex items-center justify-between">
-                <h1 className="text-2xl font-bold text-slate-800">My Courses</h1>
-                <span className="text-sm font-medium text-slate-500">Spring 2026</span>
-            </div>
-
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                {courses.map((course) => (
-                    <div key={course.id} className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm transition-all hover:shadow-md">
-                        <div className="mb-4 flex items-start justify-between">
-                            <div>
-                                <span className="mb-1 inline-block rounded-full bg-primary-50 px-2 py-1 text-xs font-semibold text-primary-700">
-                                    {course.code}
-                                </span>
-                                <h3 className="text-lg font-semibold text-slate-900">{course.name}</h3>
-                            </div>
-                            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-xs font-bold text-slate-600">
-                                {course.credits}
-                            </div>
-                        </div>
-
-                        <div className="mb-4">
-                            <p className="text-sm text-slate-500">Instructor: <span className="text-slate-700">{course.instructor}</span></p>
-                        </div>
-
-                        <div className="space-y-2">
-                            <div className="flex justify-between text-xs font-medium">
-                                <span className="text-slate-500">Progress</span>
-                                <span className="text-slate-700">{course.progress}%</span>
-                            </div>
-                            <div className="h-2 w-full rounded-full bg-slate-100">
-                                <div
-                                    className="h-2 rounded-full bg-primary-600 transition-all duration-500"
-                                    style={{ width: `${course.progress}%` }}
-                                />
-                            </div>
-                        </div>
-                    </div>
-                ))}
-            </div>
-        </div>
-    );
-}
+import React from 'react';export default function MyCourses() {    const courses = [        { id: 1, code: 'CS101', name: 'Intro to Computer Science', instructor: 'Prof. Smith', credits: 4, progress: 75, grade: 'A' },        { id: 2, code: 'MATH202', name: 'Linear Algebra', instructor: 'Dr. Johnson', credits: 3, progress: 60, grade: 'B+' },        { id: 3, code: 'PHY101', name: 'Physics I', instructor: 'Dr. Brown', credits: 4, progress: 45, grade: 'A-' },        { id: 4, code: 'ENG101', name: 'English Composition', instructor: 'Ms. Davis', credits: 2, progress: 90, grade: 'A' },        { id: 5, code: 'HIS101', name: 'World History', instructor: 'Mr. Wilson', credits: 3, progress: 30, grade: 'B' },    ];    return (        <div className="space-y-6">            <div className="flex items-center justify-between">                <h1 className="text-2xl font-bold text-slate-800">My Courses</h1>                <span className="text-sm font-medium text-slate-500">Spring 2026</span>            </div>            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">                {courses.map((course) => (                    <div key={course.id} className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm transition-all hover:shadow-md">                        <div className="mb-4 flex items-start justify-between">                            <div>                                <span className="mb-1 inline-block rounded-full bg-primary-50 px-2 py-1 text-xs font-semibold text-primary-700">                                    {course.code}                                </span>                                <h3 className="text-lg font-semibold text-slate-900">{course.name}</h3>                            </div>                            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-xs font-bold text-slate-600">                                {course.credits}                            </div>                        </div>                        <div className="mb-4">                            <p className="text-sm text-slate-500">Instructor: <span className="text-slate-700">{course.instructor}</span></p>                        </div>                        <div className="space-y-2">                            <div className="flex justify-between text-xs font-medium">                                <span className="text-slate-500">Progress</span>                                <span className="text-slate-700">{course.progress}%</span>                            </div>                            <div className="h-2 w-full rounded-full bg-slate-100">                                <div                                    className="h-2 rounded-full bg-primary-600 transition-all duration-500"                                    style={{ width: `${course.progress}%` }}                                />                            </div>                        </div>                    </div>                ))}            </div>        </div>    );}
