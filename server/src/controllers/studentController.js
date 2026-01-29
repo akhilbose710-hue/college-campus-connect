@@ -92,7 +92,8 @@ exports.getDashboardData = async (req, res, next) => {
                 semester: semester,
                 batch: student.class?.batch,
                 tutor: student.class?.tutor?.full_name || 'Not Assigned',
-                class_name: student.class?.name
+                class_name: student.class?.name,
+                face_registered: student.face_registered
             },
             academics: {
                 overallAttendance: overallPercentage,
@@ -152,6 +153,50 @@ exports.getTimetable = async (req, res, next) => {
 
         if (error) throw error;
         res.json({ timetable });
+    } catch (error) {
+        next(error);
+    }
+};
+exports.registerFace = async (req, res, next) => {
+    try {
+        const { studentId, embedding } = req.body;
+
+        if (!studentId || !embedding) {
+            return res.status(400).json({ error: 'Student ID and embedding are required' });
+        }
+
+        // 1. Get database ID for the student (referenced by user_id)
+        const { data: student, error: fetchError } = await supabaseAdmin
+            .from('students')
+            .select('id')
+            .eq('user_id', studentId)
+            .single();
+
+        if (fetchError || !student) {
+            return res.status(404).json({ error: 'Student not found' });
+        }
+
+        // 2. Insert or Update embedding in student_face_data
+        const { error: faceError } = await supabaseAdmin
+            .from('student_face_data')
+            .upsert({
+                student_id: student.id,
+                embedding: embedding
+            }, {
+                onConflict: 'student_id'
+            });
+
+        if (faceError) throw faceError;
+
+        // 3. Mark student as having face registered
+        const { error: updateError } = await supabaseAdmin
+            .from('students')
+            .update({ face_registered: true })
+            .eq('id', student.id);
+
+        if (updateError) throw updateError;
+
+        res.json({ message: 'Face registered successfully' });
     } catch (error) {
         next(error);
     }

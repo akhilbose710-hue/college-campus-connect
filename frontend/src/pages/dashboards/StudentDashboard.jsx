@@ -9,8 +9,13 @@ import {
   BellRing,
   Award,
   GraduationCap,
-  LayoutDashboard
+  LayoutDashboard,
+  ScanFace,
+  CheckCircle,
+  AlertTriangle
 } from 'lucide-react';
+import Webcam from 'react-webcam';
+import * as faceapi from 'face-api.js';
 
 export default function StudentDashboard() {
   const { user } = useAuth();
@@ -84,6 +89,16 @@ export default function StudentDashboard() {
         >
           <Calendar size={18} />
           Timetable
+        </button>
+        <button
+          onClick={() => setActiveTab('face-registration')}
+          className={`flex items-center gap-2 px-4 py-3 text-sm font-bold border-b-2 transition-colors ${activeTab === 'face-registration'
+            ? 'border-primary-600 text-primary-600'
+            : 'border-transparent text-slate-500 hover:text-slate-700'
+            }`}
+        >
+          <ScanFace size={18} />
+          Face Registration
         </button>
       </div>
 
@@ -170,12 +185,144 @@ export default function StudentDashboard() {
 
       {activeTab === 'timetable' && (
         <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
-            <h2 className="text-lg font-bold text-slate-900 mb-6">Weekly Timetable</h2>
-            <TimetableGrid timetable={data?.timetable || []} />
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4">
+            <h2 className="text-lg font-bold text-slate-900 mb-4">Weekly Timetable</h2>
+            <div className="max-h-[70vh] overflow-y-auto">
+              <TimetableGrid timetable={data?.timetable || []} />
+            </div>
           </div>
         </div>
       )}
+
+      {activeTab === 'face-registration' && (
+        <FaceRegistrationTab user={user} isRegistered={profile.face_registered} />
+      )}
+    </div>
+  );
+}
+
+function FaceRegistrationTab({ user, isRegistered }) {
+  const [loading, setLoading] = useState(false);
+  const [modelsLoaded, setModelsLoaded] = useState(false);
+  const [status, setStatus] = useState(isRegistered ? 'registered' : 'idle'); // idle, scanning, success, error, registered
+  const webcamRef = React.useRef(null);
+
+  useEffect(() => {
+    loadModels();
+  }, []);
+
+  const loadModels = async () => {
+    try {
+      const MODEL_URL = 'https://justadudewhohacks.github.io/face-api.js/models';
+      await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
+      await faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL);
+      await faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL);
+      setModelsLoaded(true);
+    } catch (err) {
+      console.error("Failed to load face models", err);
+    }
+  };
+
+  const captureAndRegister = async () => {
+    if (!modelsLoaded) return;
+    setStatus('scanning');
+    setLoading(true);
+
+    try {
+      const imageSrc = webcamRef.current.getScreenshot();
+      const img = await faceapi.fetchImage(imageSrc);
+      const detection = await faceapi.detectSingleFace(img, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks().withFaceDescriptor();
+
+      if (!detection) {
+        setStatus('error');
+        alert("No face detected. Please position yourself clearly in front of the camera.");
+        setLoading(false);
+        return;
+      }
+
+      // Upload embedding
+      const res = await fetch('http://localhost:5000/api/student/face-register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          studentId: user.id,
+          embedding: Array.from(detection.descriptor)
+        })
+      });
+
+      if (res.ok) {
+        setStatus('success');
+      } else {
+        throw new Error('Failed to register face');
+      }
+
+    } catch (err) {
+      console.error(err);
+      setStatus('error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (!modelsLoaded) return <div className="text-center py-20 text-slate-500">Loading AI Models...</div>;
+
+  return (
+    <div className="max-w-2xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <div className="text-center">
+        <h2 className="text-2xl font-bold text-slate-900">Face Registration</h2>
+        <p className="text-slate-500 mt-2">Register your face to enable AI-powered attendance.</p>
+      </div>
+
+      <div className="bg-white rounded-3xl border border-slate-200 shadow-xl overflow-hidden relative">
+        {status === 'registered' || status === 'success' ? (
+          <div className="p-20 text-center bg-emerald-50">
+            <div className="h-24 w-24 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-6">
+              <CheckCircle size={48} />
+            </div>
+            <h3 className="text-xl font-bold text-emerald-900">Face Registered Successfully</h3>
+            <p className="text-emerald-700 mt-2">Your face data has been securely stored.</p>
+          </div>
+        ) : (
+          <div className="relative">
+            <Webcam
+              audio={false}
+              ref={webcamRef}
+              screenshotFormat="image/jpeg"
+              className="w-full aspect-video object-cover"
+              videoConstraints={{ facingMode: "user" }}
+            />
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+              <div className="w-64 h-64 border-4 border-primary-500/50 rounded-full"></div>
+            </div>
+          </div>
+        )}
+
+        {status !== 'registered' && status !== 'success' && (
+          <div className="p-6 bg-white border-t border-slate-100">
+            <button
+              onClick={captureAndRegister}
+              disabled={loading}
+              className="w-full py-4 bg-primary-600 hover:bg-primary-700 text-white font-bold rounded-xl shadow-lg shadow-primary-200 transition-all active:scale-95 disabled:opacity-70 flex items-center justify-center gap-2"
+            >
+              {loading ? (
+                <>
+                  <div className="h-5 w-5 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                  Scanning...
+                </>
+              ) : (
+                <>
+                  <ScanFace size={20} />
+                  Scan & Register Face
+                </>
+              )}
+            </button>
+            <p className="text-xs text-center text-slate-400 mt-4 flex items-center justify-center gap-1">
+              <AlertTriangle size={12} />
+              Ensure good lighting and look directly at the camera
+            </p>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
@@ -199,15 +346,15 @@ function TimetableGrid({ timetable }) {
   };
 
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full text-xs">
+    <div className="overflow-x-auto pb-2">
+      <table className="w-full text-[10px] border-collapse">
         <thead>
           <tr className="bg-slate-50 text-slate-500 uppercase font-semibold">
-            <th className="px-4 py-3 text-left border-b border-r border-slate-100 min-w-[100px]">Day</th>
+            <th className="px-2 py-2 text-left border-b border-r border-slate-100 w-20">Day</th>
             {periods.map((p, idx) => (
-              <th key={idx} className="px-2 py-3 text-center border-b border-slate-100 min-w-[100px]">
-                <div className="font-bold text-slate-700">{p.label || `Period ${idx + 1}`}</div>
-                {p.time && <div className="text-[10px] text-slate-400 font-normal mt-0.5">{p.time}</div>}
+              <th key={idx} className="px-1 py-2 text-center border-b border-slate-100 min-w-[70px]">
+                <div className="font-bold text-slate-700">{p.label || `P${idx + 1}`}</div>
+                {p.time && <div className="text-[9px] text-slate-400 font-normal">{p.time}</div>}
               </th>
             ))}
           </tr>
@@ -215,19 +362,19 @@ function TimetableGrid({ timetable }) {
         <tbody className="divide-y divide-slate-100">
           {days.map((day, dayIdx) => (
             <tr key={day} className="hover:bg-slate-50/50">
-              <td className="px-4 py-4 font-bold text-slate-900 bg-slate-50/30 border-r border-slate-100">{day}</td>
+              <td className="px-3 py-2 font-bold text-slate-900 bg-slate-50/30 border-r border-slate-100">{day}</td>
               {periods.map((p, pIdx) => {
-                if (p.label) return <td key={pIdx} className="bg-slate-50/50 text-center text-slate-400 text-[10px] font-bold uppercase tracking-widest writing-vertical-lr">{p.label}</td>;
+                if (p.label) return <td key={pIdx} className="bg-slate-50/50 text-center text-slate-400 font-bold uppercase tracking-widest writing-vertical-lr py-1">{p.label}</td>;
                 const slot = getSlot(dayIdx, p.id);
                 return (
-                  <td key={pIdx} className="p-2 border-r border-slate-50 text-center">
+                  <td key={pIdx} className="p-1 border-r border-slate-50 text-center h-16 align-middle">
                     {slot ? (
-                      <div className="bg-primary-50 text-primary-900 p-2 rounded-lg border border-primary-100">
-                        <div className="font-bold truncate" title={slot.subject?.name}>{slot.subject?.code}</div>
-                        <div className="text-[10px] text-primary-600 truncate mt-1">{slot.staff?.full_name}</div>
+                      <div className="bg-primary-50 text-primary-900 p-1.5 rounded-lg border border-primary-100 h-full flex flex-col justify-center">
+                        <div className="font-bold truncate text-[10px]" title={slot.subject?.name}>{slot.subject?.code}</div>
+                        <div className="text-[9px] text-primary-600 truncate">{slot.staff?.full_name}</div>
                       </div>
                     ) : (
-                      <div className="text-slate-300">-</div>
+                      <div className="text-slate-200">-</div>
                     )}
                   </td>
                 );
