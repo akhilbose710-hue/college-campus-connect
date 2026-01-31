@@ -15,7 +15,7 @@ import {
   AlertTriangle
 } from 'lucide-react';
 import Webcam from 'react-webcam';
-import * as faceapi from 'face-api.js';
+import * as faceapi from '@vladmandic/face-api';
 
 export default function StudentDashboard() {
   const { user } = useAuth();
