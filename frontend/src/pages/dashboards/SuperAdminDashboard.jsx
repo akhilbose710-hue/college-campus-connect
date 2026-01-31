@@ -1,6 +1,6 @@
 import { API_BASE_URL } from '../../config'; import React, { useEffect, useState } from 'react'; import { useSearchParams } from 'react-router-dom'; import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts'; import { LayoutDashboard, Users, Building2, GraduationCap, Upload, Plus, UserPlus, Briefcase, Search, Filter, MoreVertical, CheckCircle, XCircle, Shield, Calendar, LogOut, ChevronRight, BookOpen, Trash2 } from 'lucide-react'; const chartData = [{ month: 'Jan', users: 120 }, { month: 'Feb', users: 180 }, { month: 'Mar', users: 260 }, { month: 'Apr', users: 320 }, { month: 'May', users: 410 }]; export default function SuperAdminDashboard() {
   const [searchParams, setSearchParams] = useSearchParams(); const activeTab = searchParams.get('tab') || 'overview'; const setActiveTab = (tab) => { setSearchParams({ tab }); }; const [stats, setStats] = useState({ totalUsers: 0, activeDevices: 14, attendance: '94.3%' }); const [departments, setDepartments] = useState([]); const [staffList, setStaffList] = useState([]); const [loading, setLoading] = useState(true); useEffect(() => { fetchStats(); fetchDepartments(); fetchStaff(); }, []); const fetchStats = async () => {
-    try { const response = await fetch('${API_BASE_URL}/admin/stats'); const data = await response.json(); if (data.totalUsers) { setStats(prev => ({ ...prev, totalUsers: data.totalUsers })); } } catch (error) {
+    try { const response = await fetch(`${API_BASE_URL}/admin/stats`); const data = await response.json(); if (data.totalUsers) { setStats(prev => ({ ...prev, totalUsers: data.totalUsers })); } } catch (error) {
       console.error('Failed to fetch stats:', error);
     } finally {
       setLoading(false);
@@ -8,7 +8,7 @@ import { API_BASE_URL } from '../../config'; import React, { useEffect, useState
   };
   const fetchDepartments = async () => {
     try {
-      const response = await fetch('${API_BASE_URL}/admin/departments');
+      const response = await fetch(`${API_BASE_URL}/admin/departments`);
       const data = await response.json();
       if (data.departments) {
         setDepartments(data.departments);
@@ -19,7 +19,7 @@ import { API_BASE_URL } from '../../config'; import React, { useEffect, useState
   };
   const fetchStaff = async () => {
     try {
-      const response = await fetch('${API_BASE_URL}/admin/staff');
+      const response = await fetch(`${API_BASE_URL}/admin/staff`);
       const data = await response.json();
       if (data.staff) {
         setStaffList(data.staff);
@@ -127,7 +127,7 @@ import { API_BASE_URL } from '../../config'; import React, { useEffect, useState
   }, []);
   const fetchUsers = async () => {
     try {
-      const response = await fetch('${API_BASE_URL}/admin/users');
+      const response = await fetch(`${API_BASE_URL}/admin/users`);
       const data = await response.json();
       if (data.users) {
         setUsers(data.users);
@@ -278,7 +278,7 @@ import { API_BASE_URL } from '../../config'; import React, { useEffect, useState
     const semester = e.currentTarget.semester.value;
     const batch = e.currentTarget.batch.value;
     try {
-      const res = await fetch('${API_BASE_URL}/admin/classes', {
+      const res = await fetch(`${API_BASE_URL}/admin/classes`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: className, department_code: selectedDept.code, tutor_id: tutorId || null, semester, batch })
@@ -343,7 +343,7 @@ import { API_BASE_URL } from '../../config'; import React, { useEffect, useState
     e.preventDefault();
     setLoading(true);
     try {
-      const res = await fetch('${API_BASE_URL}/admin/users', {
+      const res = await fetch(`${API_BASE_URL}/admin/users`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -567,7 +567,7 @@ import { API_BASE_URL } from '../../config'; import React, { useEffect, useState
     e.preventDefault();
     setLoading(true);
     try {
-      const response = await fetch('${API_BASE_URL}/admin/users', {
+      const response = await fetch(`${API_BASE_URL}/admin/users`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: formData.email, name: formData.name, role: formData.role, metadata: { departmentCode: formData.departmentCode, dob: formData.dob, employeeId: formData.employeeId } })
@@ -637,7 +637,7 @@ import { API_BASE_URL } from '../../config'; import React, { useEffect, useState
     e.preventDefault();
     setLoading(true);
     try {
-      const res = await fetch('${API_BASE_URL}/admin/departments', {
+      const res = await fetch(`${API_BASE_URL}/admin/departments`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
@@ -713,7 +713,7 @@ import { API_BASE_URL } from '../../config'; import React, { useEffect, useState
   }, []);
   const fetchStaff = async () => {
     try {
-      const res = await fetch('${API_BASE_URL}/admin/staff');
+      const res = await fetch(`${API_BASE_URL}/admin/staff`);
       const data = await res.json();
       setStaff(data.staff || []);
     } catch (err) {
@@ -725,7 +725,7 @@ import { API_BASE_URL } from '../../config'; import React, { useEffect, useState
     if (!formData.userId) return alert('Select a staff member');
     setLoading(true);
     try {
-      const res = await fetch('${API_BASE_URL}/admin/assign-role', {
+      const res = await fetch(`${API_BASE_URL}/admin/assign-role`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
@@ -777,7 +777,7 @@ import { API_BASE_URL } from '../../config'; import React, { useEffect, useState
     if (!window.confirm('CRITICAL: This will promote every student to the next semester and graduate S8 students. This cannot be undone. Proceed?')) return;
     setLoading(true);
     try {
-      const res = await fetch('${API_BASE_URL}/admin/promote', { method: 'POST' });
+      const res = await fetch(`${API_BASE_URL}/admin/promote`, { method: 'POST' });
       const data = await res.json();
       setResults(data);
     } catch (err) {
@@ -820,7 +820,7 @@ import { API_BASE_URL } from '../../config'; import React, { useEffect, useState
   }, []);
   const fetchSubjects = async () => {
     try {
-      const res = await fetch('${API_BASE_URL}/admin/subjects');
+      const res = await fetch(`${API_BASE_URL}/admin/subjects`);
       const data = await res.json();
       setSubjects(data.subjects || []);
     } catch (err) { console.error(err); }
@@ -829,7 +829,7 @@ import { API_BASE_URL } from '../../config'; import React, { useEffect, useState
     e.preventDefault();
     setLoading(true);
     try {
-      const res = await fetch('${API_BASE_URL}/admin/subjects', {
+      const res = await fetch(`${API_BASE_URL}/admin/subjects`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
@@ -993,7 +993,7 @@ function TimetableTab({ departments, staffList }) {
   const handleUpdateSlot = async (subjectId, staffId) => {
     if (!editingSlot) return;
     try {
-      const res = await fetch('${API_BASE_URL}/admin/timetable', {
+      const res = await fetch(`${API_BASE_URL}/admin/timetable`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
