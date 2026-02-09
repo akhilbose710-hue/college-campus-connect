@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Background with rounded corners -->
+  <rect x="0" y="0" width="512" height="512" rx="120" ry="120" fill="#2563eb" />
+  
+  <!-- Shield Icon -->
+  <path d="M256 80 L420 160 V260 C420 380 256 440 256 440 C256 440 92 380 92 260 V160 L256 80 Z" fill="none" stroke="white" stroke-width="24" stroke-linejoin="round" />
+  
+  <!-- Book/Education Symbol -->
+  <path d="M176 200 L256 240 L336 200 M256 240 V340" stroke="white" stroke-width="24" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <path d="M176 200 V300 L256 340 L336 300 V200" fill="none" stroke="white" stroke-width="24" stroke-linejoin="round"/>
+  
+  <!-- Graduation Cap Tassel -->
+  <circle cx="256" cy="160" r="16" fill="white" />
+</svg>
