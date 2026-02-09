@@ -23,15 +23,16 @@ export default function ClassSchedules() {
     };
     const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
     const PERIODS = [
-        { id: 1, time: '09:10 - 10:10' },
-        { id: 2, time: '10:10 - 11:10' },
+        { id: 1, time: '09:00 - 09:50' },
+        { id: 2, time: '09:50 - 10:40' },
         { id: 'break1', label: 'Break' },
-        { id: 3, time: '11:20 - 12:20' },
+        { id: 3, time: '10:55 - 11:45' },
+        { id: 4, time: '11:45 - 12:35' },
         { id: 'lunch', label: 'Lunch' },
-        { id: 4, time: '13:00 - 14:00' },
-        { id: 5, time: '14:00 - 15:00' },
+        { id: 5, time: '13:35 - 14:25' },
+        { id: 6, time: '14:25 - 15:15' },
         { id: 'break2', label: 'Break' },
-        { id: 6, time: '15:10 - 16:00' }
+        { id: 7, time: '15:40 - 16:20' }
     ];
     const getSlot = (dayIdx, periodId) => {
         return timetable.find(t => t.day_of_week === dayIdx && t.period === periodId);

@@ -15,7 +15,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
 const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
-const PERIODS = [1, 2, 3, 4, 5, 6];
+const PERIODS = [1, 2, 3, 4, 5, 6, 7];
 const attendanceData = [
   { day: 'Mon', attendance: 93 },
   { day: 'Tue', attendance: 95 },
