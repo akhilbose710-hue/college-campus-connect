@@ -91,6 +91,12 @@ export default function Layout() {
     }
     if (roles.includes('PRINCIPAL')) {
       navItems.push({ to: '/attendance', label: 'Dept Stats', icon: TrendingUp });
+      navItems.push({ to: '/principal?tab=users', label: 'All Users', icon: Users });
+      navItems.push({ to: '/principal?tab=departments', label: 'Departments', icon: Building2 });
+      navItems.push({ to: '/principal?tab=add-student', label: 'Add Student', icon: GraduationCap });
+      navItems.push({ to: '/principal?tab=add-course', label: 'Add Course', icon: BookOpen });
+      navItems.push({ to: '/principal?tab=timetable', label: 'Timetable', icon: CalendarDays });
+      navItems.push({ to: '/principal?tab=add-staff', label: 'Add Staff', icon: Briefcase });
     }
   }
   if (roles.includes('STUDENT')) {

@@ -1,1 +1,83 @@
-import React from 'react';import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';const attendanceData = [  { day: 'Mon', attendance: 93 },  { day: 'Tue', attendance: 95 },  { day: 'Wed', attendance: 91 },  { day: 'Thu', attendance: 96 },  { day: 'Fri', attendance: 94 }];export default function PrincipalDashboard() {  return (    <div className="space-y-6">      <h1 className="text-xl font-semibold text-slate-900">Principal Dashboard</h1>      <div className="grid gap-4 md:grid-cols-3">        <div className="card">          <div className="text-xs font-medium text-slate-500">Departments</div>          <div className="mt-2 text-2xl font-semibold text-slate-900">12</div>        </div>        <div className="card">          <div className="text-xs font-medium text-slate-500">Faculty</div>          <div className="mt-2 text-2xl font-semibold text-slate-900">184</div>        </div>        <div className="card">          <div className="text-xs font-medium text-slate-500">Overall Attendance</div>          <div className="mt-2 text-2xl font-semibold text-slate-900">93.8%</div>        </div>      </div>      <div className="card">        <div className="mb-3 flex items-center justify-between">          <div>            <div className="text-sm font-semibold text-slate-900">Weekly Attendance</div>            <div className="text-xs text-slate-500">All departments</div>          </div>        </div>        <div className="h-64">          <ResponsiveContainer width="100%" height="100%">            <AreaChart data={attendanceData} margin={{ left: -20 }}>              <defs>                <linearGradient id="attGradient" x1="0" y1="0" x2="0" y2="1">                  <stop offset="5%" stopColor="#22c55e" stopOpacity={0.8} />                  <stop offset="95%" stopColor="#22c55e" stopOpacity={0} />                </linearGradient>              </defs>              <CartesianGrid strokeDasharray="3 3" vertical={false} />              <XAxis dataKey="day" />              <YAxis />              <Tooltip />              <Area                type="monotone"                dataKey="attendance"                stroke="#16a34a"                fill="url(#attGradient)"                strokeWidth={2}              />            </AreaChart>          </ResponsiveContainer>        </div>      </div>    </div>  );}
+import { API_BASE_URL } from '../../config';
+import React, { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import { Users, Building2, GraduationCap, BookOpen, Briefcase, Calendar } from 'lucide-react';
+import UsersListTab from '../../components/dashboard/UsersListTab';
+import DepartmentsTab from '../../components/dashboard/DepartmentsTab';
+import AddStudentTab from '../../components/dashboard/AddStudentTab';
+import AddCourseTab from '../../components/dashboard/AddCourseTab';
+import TimetableTab from '../../components/dashboard/TimetableTab';
+import AddStaffTab from '../../components/dashboard/AddStaffTab';
+
+export default function PrincipalDashboard() {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const activeTab = searchParams.get('tab') || 'users';
+
+  const [departments, setDepartments] = useState([]);
+  const [staffList, setStaffList] = useState([]);
+
+  useEffect(() => {
+    fetchDepartments();
+    fetchStaff();
+  }, []);
+
+  const fetchDepartments = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/admin/departments`);
+      const data = await response.json();
+      if (data.departments) {
+        setDepartments(data.departments);
+      }
+    } catch (error) {
+      console.error('Failed to fetch departments:', error);
+    }
+  };
+
+  const fetchStaff = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/admin/staff`);
+      const data = await response.json();
+      if (data.staff) {
+        setStaffList(data.staff);
+      }
+    } catch (error) {
+      console.error('Failed to fetch staff:', error);
+    }
+  };
+
+  const tabs = [
+    { id: 'users', label: 'All Users', icon: Users },
+    { id: 'departments', label: 'Departments', icon: Building2 },
+    { id: 'add-student', label: 'Add Student/Class', icon: GraduationCap },
+    { id: 'add-course', label: 'Add Course', icon: BookOpen },
+    { id: 'timetable', label: 'Timetable', icon: Calendar },
+    { id: 'add-staff', label: 'Add Staff', icon: Briefcase },
+  ];
+
+  return (
+    <div className="p-6 md:p-10 space-y-8 max-w-7xl mx-auto w-full">
+      <div>
+        <h1 className="text-3xl font-bold tracking-tight text-slate-900">
+          {tabs.find(t => t.id === activeTab)?.label || 'Principal Dashboard'}
+        </h1>
+        <p className="text-slate-500 mt-1">
+          {activeTab === 'users' && 'Manage all students and staff members in one place.'}
+          {activeTab === 'departments' && 'Organize and manage faculty departments.'}
+          {activeTab === 'add-student' && 'Manage departments, classes and student registration.'}
+          {activeTab === 'add-course' && 'Define academic courses and subjects per department.'}
+          {activeTab === 'timetable' && 'Construct and manage weekly schedules for classes.'}
+          {activeTab === 'add-staff' && 'Onboard new faculty and administrative staff.'}
+        </p>
+      </div>
+
+      <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 ease-in-out">
+        {activeTab === 'users' && <UsersListTab />}
+        {activeTab === 'departments' && <DepartmentsTab departments={departments} onUpdate={fetchDepartments} />}
+        {activeTab === 'add-student' && <AddStudentTab departments={departments} staffList={staffList} />}
+        {activeTab === 'add-course' && <AddCourseTab departments={departments} />}
+        {activeTab === 'timetable' && <TimetableTab departments={departments} staffList={staffList} />}
+        {activeTab === 'add-staff' && <AddStaffTab departments={departments} />}
+      </div>
+    </div>
+  );
+}
