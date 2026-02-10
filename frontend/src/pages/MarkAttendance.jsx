@@ -435,11 +435,16 @@ function VideoAttendanceModal({ classId, onClose, students, onMatch, onScanCompl
         init();
     }, [classId]);
 
+    // Ref for tracking detection consistency to prevent false positives
+    const detectionStatsRef = React.useRef({});
+
     // Fix: Replaced setInterval with recursive setTimeout to prevent race conditions in TFJS backend
     useEffect(() => {
         if (loading || labeledDescriptors.length === 0) return;
 
         let timeoutId;
+        const CONFIRMATION_THRESHOLD = 5; // Require 5 consistent detections
+        const MATCH_THRESHOLD = 0.45; // Stricter threshold (lower is stricter)
 
         const scan = async () => {
             if (!isMounted.current) return;
@@ -449,22 +454,45 @@ function VideoAttendanceModal({ classId, onClose, students, onMatch, onScanCompl
                     const video = webcamRef.current.video;
                     // Check video dimensions to avoid "n2 is undefined" error in backend
                     if (video.videoWidth > 0 && video.videoHeight > 0) {
-                        const detections = await faceapi.detectAllFaces(video, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks().withFaceDescriptors();
+                        // Use slightly higher score threshold for detector to reduce noise
+                        const detections = await faceapi.detectAllFaces(
+                            video,
+                            new faceapi.TinyFaceDetectorOptions({ scoreThreshold: 0.5 })
+                        ).withFaceLandmarks().withFaceDescriptors();
+
                         if (isMounted.current && detections.length > 0) {
-                            const faceMatcher = new faceapi.FaceMatcher(labeledDescriptors, 0.6);
+                            const faceMatcher = new faceapi.FaceMatcher(labeledDescriptors, MATCH_THRESHOLD);
+
                             detections.forEach(d => {
                                 const match = faceMatcher.findBestMatch(d.descriptor);
                                 if (match.label !== 'unknown') {
-                                    const student = students.find(s => s.id === match.label);
-                                    if (student) {
-                                        setDetectedName(student.name);
-                                        if (!matchedIdsRef.current.has(match.label)) {
-                                            matchedIdsRef.current.add(match.label);
-                                            onMatch(match.label);
+                                    // Update detection stats
+                                    const currentStats = detectionStatsRef.current[match.label] || { count: 0, lastSeen: 0 };
+                                    const now = Date.now();
+
+                                    // Reset count if not seen for a while (e.g., 2 seconds) to ensure consecutive-ish detection
+                                    if (now - currentStats.lastSeen > 2000) {
+                                        currentStats.count = 0;
+                                    }
+
+                                    currentStats.count += 1;
+                                    currentStats.lastSeen = now;
+                                    detectionStatsRef.current[match.label] = currentStats;
+
+                                    // Only Confirm if threshold reached
+                                    if (currentStats.count >= CONFIRMATION_THRESHOLD) {
+                                        const student = students.find(s => s.id === match.label);
+                                        if (student) {
+                                            setDetectedName(student.name);
+                                            if (!matchedIdsRef.current.has(match.label)) {
+                                                matchedIdsRef.current.add(match.label);
+                                                onMatch(match.label);
+                                            }
+                                            // Clear name display after delay
+                                            setTimeout(() => {
+                                                if (isMounted.current) setDetectedName('');
+                                            }, 2000);
                                         }
-                                        setTimeout(() => {
-                                            if (isMounted.current) setDetectedName('');
-                                        }, 2000);
                                     }
                                 }
                             });
@@ -475,7 +503,7 @@ function VideoAttendanceModal({ classId, onClose, students, onMatch, onScanCompl
                 console.error("Face scan error", err);
             } finally {
                 if (isMounted.current) {
-                    timeoutId = setTimeout(scan, 200); // 200ms delay between scans
+                    timeoutId = setTimeout(scan, 100); // 100ms delay for smoother tracking
                 }
             }
         };
