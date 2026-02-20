@@ -149,4 +149,42 @@ const { createClient } = require('@supabase/supabase-js'); const config = requir
     } catch (error) {
         next(error);
     }
-}; exports.getAttendanceSheet = async (req, res, next) => { if (!ensureAdmin(res)) return; try { const { classId, date, period } = req.query; const { data: students } = await supabaseAdmin.from('students').select('id, user_id, admission_number, users(full_name)').eq('class_id', classId); const { data: existing } = await supabaseAdmin.from('attendance').select('student_id, status').eq('class_id', classId).eq('date', date).eq('period', period); const attendanceMap = (existing || []).reduce((acc, a) => { acc[a.student_id] = a.status; return acc; }, {}); const sheet = (students || []).map(s => ({ id: s.id, userId: s.user_id, name: s.users?.full_name, admission: s.admission_number, status: attendanceMap[s.id] || null })); res.json({ students: sheet }); } catch (error) { next(error); } }; exports.markAttendance = async (req, res, next) => { if (!ensureAdmin(res)) return; try { const { records } = req.body; const { error } = await supabaseAdmin.from('attendance').upsert(records, { onConflict: 'student_id,date,period' }); if (error) throw error; res.json({ message: 'Attendance marked successfully' }); } catch (error) { next(error); } }; exports.getClassEmbeddings = async (req, res, next) => { if (!ensureAdmin(res)) return; try { const { classId } = req.query; const { data: students, error: studentError } = await supabaseAdmin.from('students').select('id').eq('class_id', classId); if (studentError) throw studentError; const studentIds = students.map(s => s.id); const { data: embeddings, error: embedError } = await supabaseAdmin.from('student_face_data').select('student_id, embedding').in('student_id', studentIds); if (embedError) throw embedError; res.json({ embeddings }); } catch (error) { next(error); } }; function getOrdinal(n) { const s = ["th", "st", "nd", "rd"]; const v = n % 100; return s[(v - 20) % 10] || s[v] || s[0]; }
+}; exports.getAttendanceSheet = async (req, res, next) => { if (!ensureAdmin(res)) return; try { const { classId, date, period } = req.query; const { data: students } = await supabaseAdmin.from('students').select('id, user_id, admission_number, users(full_name)').eq('class_id', classId); const { data: existing } = await supabaseAdmin.from('attendance').select('student_id, status').eq('class_id', classId).eq('date', date).eq('period', period); const attendanceMap = (existing || []).reduce((acc, a) => { acc[a.student_id] = a.status; return acc; }, {}); const sheet = (students || []).map(s => ({ id: s.id, userId: s.user_id, name: s.users?.full_name, admission: s.admission_number, status: attendanceMap[s.id] || null })); res.json({ students: sheet }); } catch (error) { next(error); } }; exports.markAttendance = async (req, res, next) => { if (!ensureAdmin(res)) return; try { const { records } = req.body; const { error } = await supabaseAdmin.from('attendance').upsert(records, { onConflict: 'student_id,date,period' }); if (error) throw error; res.json({ message: 'Attendance marked successfully' }); } catch (error) { next(error); } }; exports.getClassEmbeddings = async (req, res, next) => { if (!ensureAdmin(res)) return; try { const { classId } = req.query; const { data: students, error: studentError } = await supabaseAdmin.from('students').select('id').eq('class_id', classId); if (studentError) throw studentError; const studentIds = students.map(s => s.id); const { data: embeddings, error: embedError } = await supabaseAdmin.from('student_face_data').select('student_id, embedding').in('student_id', studentIds); if (embedError) throw embedError; res.json({ embeddings }); } catch (error) { next(error); } };
+
+exports.getSubjectAttendance = async (req, res, next) => {
+    if (!ensureAdmin(res)) return;
+    try {
+        const { classId, subjectId } = req.query;
+        if (!classId || !subjectId) return res.status(400).json({ error: 'classId and subjectId are required' });
+
+        const { data: students, error: studentError } = await supabaseAdmin.from('students').select('id, admission_number, users(full_name)').eq('class_id', classId);
+        if (studentError) throw studentError;
+
+        const { data: attendance, error: attError } = await supabaseAdmin.from('attendance').select('student_id, status').eq('class_id', classId).eq('subject_id', subjectId);
+        if (attError) throw attError;
+
+        const stats = {};
+        (students || []).forEach(s => {
+            stats[s.id] = { id: s.id, name: s.users?.full_name || 'N/A', admission: s.admission_number, total: 0, present: 0 };
+        });
+
+        (attendance || []).forEach(a => {
+            if (stats[a.student_id]) {
+                stats[a.student_id].total += 1;
+                if (a.status === 'PRESENT') stats[a.student_id].present += 1;
+            }
+        });
+
+        const result = Object.values(stats).map(s => {
+            const percentage = s.total > 0 ? (s.present / s.total) * 100 : 0;
+            return { ...s, percentage: parseFloat(percentage).toFixed(2) };
+        });
+
+        result.sort((a, b) => a.admission.localeCompare(b.admission));
+        res.json({ attendance: result });
+    } catch (error) {
+        next(error);
+    }
+};
+
+function getOrdinal(n) { const s = ["th", "st", "nd", "rd"]; const v = n % 100; return s[(v - 20) % 10] || s[v] || s[0]; }

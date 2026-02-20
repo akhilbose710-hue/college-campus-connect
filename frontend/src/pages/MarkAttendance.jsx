@@ -26,7 +26,13 @@ export default function MarkAttendance() {
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
     const { user } = useAuth();
-    const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+    const [date, setDate] = useState(() => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const paramDate = urlParams.get('date');
+        if (paramDate) return paramDate;
+        const d = new Date();
+        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    });
     const [schedule, setSchedule] = useState([]);
     const [activeSlot, setActiveSlot] = useState(null);
     const [students, setStudents] = useState([]);

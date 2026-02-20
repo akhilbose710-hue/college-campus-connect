@@ -151,6 +151,25 @@ export default function StaffDashboard() {
     s.admission?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  const weekDays = React.useMemo(() => {
+    const today = new Date();
+    let currentDayIdx = today.getDay() === 0 ? 6 : today.getDay() - 1;
+    const monday = new Date(today);
+    monday.setDate(today.getDate() - currentDayIdx);
+    return DAYS.map((day, idx) => {
+      const d = new Date(monday);
+      d.setDate(monday.getDate() + idx);
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const dateNum = String(d.getDate()).padStart(2, '0');
+      return {
+        name: day,
+        dateStr: d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+        isoDate: `${year}-${month}-${dateNum}`
+      };
+    });
+  }, []);
+
   if (loading) return (
     <div className="flex h-[60vh] items-center justify-center">
       <div className="flex flex-col items-center gap-3">
@@ -434,36 +453,7 @@ export default function StaffDashboard() {
       {/* Default View for All Staff (My Schedule) */}
       {(!isHOD || activeTab === 'overview') && (
         <>
-          {isPrincipal && (
-            <section className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
-              <div className="mb-6 flex items-center justify-between">
-                <div>
-                  <h3 className="text-sm font-bold text-slate-900">Weekly Attendance Overview</h3>
-                  <p className="text-[11px] text-slate-500 font-medium uppercase tracking-tight">Interactive Trend Analysis</p>
-                </div>
-              </div>
-              <div className="h-64">
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={attendanceData} margin={{ left: -20, top: 10 }}>
-                    <defs>
-                      <linearGradient id="attGrad" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#6366f1" stopOpacity={0.15} />
-                        <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                    <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 600, fill: '#94a3b8' }} />
-                    <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 600, fill: '#94a3b8' }} />
-                    <Tooltip
-                      contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', fontSize: '12px', fontWeight: 'bold' }}
-                      cursor={{ stroke: '#6366f1', strokeWidth: 2 }}
-                    />
-                    <Area type="monotone" dataKey="attendance" stroke="#6366f1" strokeWidth={3} fill="url(#attGrad)" />
-                  </AreaChart>
-                </ResponsiveContainer>
-              </div>
-            </section>
-          )}
+
 
           {data.tutorship && (
             <section className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden ring-1 ring-slate-100/50">
@@ -536,9 +526,12 @@ export default function StaffDashboard() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
-                    {DAYS.map((day, dIdx) => (
-                      <tr key={day} className="group hover:bg-slate-50/50 transition-colors">
-                        <td className="p-5 font-bold text-slate-600 text-[11px] uppercase tracking-wider border-r border-slate-100 bg-slate-50/20">{day}</td>
+                    {weekDays.map((dayObj, dIdx) => (
+                      <tr key={dayObj.name} className="group hover:bg-slate-50/50 transition-colors">
+                        <td className="p-5 font-bold text-slate-600 text-[11px] uppercase tracking-wider border-r border-slate-100 bg-slate-50/20">
+                          <div>{dayObj.name}</div>
+                          <div className="text-[9px] text-slate-400 font-medium tracking-normal normal-case mt-0.5">{dayObj.dateStr}</div>
+                        </td>
                         {PERIODS.map(p => {
                           if (p.label) return <td key={p.id} className="bg-slate-50/30"></td>;
                           const slot = getSlot(dIdx, p.id);
@@ -546,7 +539,7 @@ export default function StaffDashboard() {
                             <td key={p.id} className="p-3 border-r border-slate-100 last:border-r-0 h-28 min-w-[160px]">
                               {slot ? (
                                 <button
-                                  onClick={() => navigate(`/mark-attendance?classId=${slot.class_id}&period=${p.id}&subjectId=${slot.subject_id}&day=${dIdx}`)}
+                                  onClick={() => navigate(`/mark-attendance?classId=${slot.class_id}&period=${p.id}&subjectId=${slot.subject_id}&date=${dayObj.isoDate}`)}
                                   className="w-full h-full p-4 rounded-2xl bg-white text-left border border-slate-200 hover:border-primary-400 hover:shadow-xl hover:shadow-primary-100 hover:scale-[1.03] transition-all group/slot relative overflow-hidden ring-0 hover:ring-2 hover:ring-primary-100"
                                 >
                                   <div className="absolute top-0 right-0 p-2 opacity-0 group-hover/slot:opacity-100 transition-all translate-x-2 group-hover/slot:translate-x-0">

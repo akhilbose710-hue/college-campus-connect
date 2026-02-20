@@ -191,7 +191,11 @@ export default function Layout() {
                 {todaySchedule.map(slot => (
                   <button
                     key={slot.id}
-                    onClick={() => navigate(`/mark-attendance?classId=${slot.class_id}&period=${slot.period}&subjectId=${slot.subject_id}`)}
+                    onClick={() => {
+                      const d = new Date();
+                      const dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+                      navigate(`/mark-attendance?classId=${slot.class_id}&period=${slot.period}&subjectId=${slot.subject_id}&date=${dateStr}`);
+                    }}
                     className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-left hover:bg-slate-50 transition-all group border border-transparent hover:border-slate-100"
                   >
                     <div className="h-8 w-8 rounded-lg bg-slate-100 text-slate-500 flex items-center justify-center text-[10px] font-black group-hover:bg-primary-100 group-hover:text-primary-600 transition-colors">
