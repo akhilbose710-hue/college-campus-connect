@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { API_BASE_URL } from '../config';
-import { Building2, LayoutGrid, BookOpen, Users } from 'lucide-react';
+import { Building2, LayoutGrid, BookOpen, Users, Download } from 'lucide-react';
 
 export default function ReportsAnalytics() {
   const [departments, setDepartments] = useState([]);
@@ -62,6 +62,39 @@ export default function ReportsAnalytics() {
     } catch (error) { } finally {
       setLoading(false);
     }
+  };
+
+  const handleDownloadCSV = () => {
+    if (!attendance || attendance.length === 0) return;
+
+    const headers = ['No.', 'Admission No', 'Student Name', 'Total Classes', 'Attended', 'Percentage'];
+    const csvRows = [headers.join(',')];
+
+    attendance.forEach((s, idx) => {
+      const row = [
+        idx + 1,
+        s.admission,
+        `"${s.name}"`,
+        s.total,
+        s.present,
+        `${s.percentage}%`
+      ];
+      csvRows.push(row.join(','));
+    });
+
+    const csvString = csvRows.join('\n');
+    const blob = new Blob([csvString], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+
+    const safeDept = selectedDept?.name?.replace(/[^a-z0-9]/gi, '_').toLowerCase() || 'dept';
+    const safeClass = selectedClass?.name?.replace(/[^a-z0-9]/gi, '_').toLowerCase() || 'class';
+    const safeSubj = selectedSubject?.name?.replace(/[^a-z0-9]/gi, '_').toLowerCase() || 'subject';
+
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${safeDept}_${safeClass}_${safeSubj}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
   };
 
   const classSubjects = selectedClass ? subjects.filter(s => s.semester === selectedClass.semester) : [];
@@ -139,10 +172,20 @@ export default function ReportsAnalytics() {
 
         <div className="lg:col-span-1 xl:col-span-4 mt-6 border-t border-slate-200 pt-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
-            <h2 className="font-bold text-slate-900 flex items-center gap-2 text-lg">
-              <Users size={20} className="text-emerald-600" /> Attendance Report
-            </h2>
-            {selectedSubject && <span className="text-xs font-bold text-slate-500 bg-slate-100 px-3 py-1 rounded-full">{selectedClass.name} &bull; {selectedSubject.name}</span>}
+            <div className="flex items-center gap-4">
+              <h2 className="font-bold text-slate-900 flex items-center gap-2 text-lg">
+                <Users size={20} className="text-emerald-600" /> Attendance Report
+              </h2>
+              {selectedSubject && <span className="text-xs font-bold text-slate-500 bg-slate-100 px-3 py-1 rounded-full hidden sm:inline-block">{selectedClass.name} &bull; {selectedSubject.name}</span>}
+            </div>
+            {selectedSubject && attendance.length > 0 && (
+              <button
+                onClick={handleDownloadCSV}
+                className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-sm font-bold transition-all active:scale-95 shadow-sm hover:shadow-md"
+              >
+                <Download size={16} /> Download CSV
+              </button>
+            )}
           </div>
 
           {!selectedSubject ? (
