@@ -21,6 +21,8 @@ import ActivitySurvey from './pages/ActivitySurvey';
 import ApplicationForms from './pages/ApplicationForms';
 import LeaveApplications from './pages/LeaveApplications';
 import MarkAttendance from './pages/MarkAttendance';
+import FacultySeriesExam from './pages/FacultySeriesExam';
+import StudentSeriesExam from './pages/StudentSeriesExam';
 import './index.css';
 
 export default function App() {
@@ -33,25 +35,29 @@ export default function App() {
           <Route element={<ProtectedRoute />}>
             <Route element={<Layout />}>
               <Route index element={<Navigate to="/dashboard" replace />} />
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/attendance" element={<AttendanceView />} />
-              <Route path="/students/:id" element={<StudentProfile />} />
-              <Route path="/staff/:id" element={<StaffProfile />} />
-              <Route path="/reports" element={<ReportsAnalytics />} />
-              <Route path="/my-courses" element={<MyCourses />} />
-              <Route path="/schedule" element={<ClassSchedules />} />
-              <Route path="/survey" element={<ActivitySurvey />} />
-              <Route path="/forms" element={<ApplicationForms />} />
-              <Route path="/leave" element={<LeaveApplications />} />
+              <Route path="dashboard" element={<Dashboard />} />
+              <Route path="attendance" element={<AttendanceView />} />
+              <Route path="students/:id" element={<StudentProfile />} />
+              <Route path="staff/:id" element={<StaffProfile />} />
+              <Route path="reports" element={<ReportsAnalytics />} />
+              <Route path="my-courses" element={<MyCourses />} />
+              <Route path="schedule" element={<ClassSchedules />} />
+              <Route path="survey" element={<ActivitySurvey />} />
+              <Route path="forms" element={<ApplicationForms />} />
+              <Route path="leave" element={<LeaveApplications />} />
               <Route element={<RoleRoute allowedRoles={['STAFF', 'LECTURER', 'HOD', 'PRINCIPAL']} />}>
-                <Route path="/mark-attendance" element={<MarkAttendance />} />
+                <Route path="mark-attendance" element={<MarkAttendance />} />
+                <Route path="faculty-series-exam" element={<FacultySeriesExam />} />
+              </Route>
+              <Route element={<RoleRoute allowedRoles={['STUDENT']} />}>
+                <Route path="student-series-exam" element={<StudentSeriesExam />} />
               </Route>
               <Route element={<RoleRoute allowedRoles={['SUPER_ADMIN', 'IT_ADMIN']} />}>
-                <Route path="/admin" element={<SuperAdminDashboard />} />
-                <Route path="/devices" element={<DeviceManagement />} />
+                <Route path="admin" element={<SuperAdminDashboard />} />
+                <Route path="devices" element={<DeviceManagement />} />
               </Route>
               <Route element={<RoleRoute allowedRoles={['PRINCIPAL']} />}>
-                <Route path="/principal" element={<PrincipalDashboard />} />
+                <Route path="principal" element={<PrincipalDashboard />} />
               </Route>
             </Route>
           </Route>

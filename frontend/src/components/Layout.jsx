@@ -92,6 +92,7 @@ export default function Layout() {
     navItems.push({ to: '/mark-attendance', label: 'Mark Attendance', icon: UserCheck });
     navItems.push({ to: '/leave', label: 'Leave & Apps', icon: FileEdit });
     navItems.push({ to: '/forms', label: 'My Forms', icon: FileText });
+    navItems.push({ to: '/faculty-series-exam', label: 'Series Exams', icon: FileText });
     if (roles.includes('HOD')) {
       navItems.push({ to: '/dashboard?tab=staff', label: 'Dept Staff', icon: Users });
       navItems.push({ to: '/dashboard?tab=students', label: 'Dept Students', icon: GraduationCap });
@@ -114,6 +115,7 @@ export default function Layout() {
     navItems.push({ to: '/leave', label: 'Leave Applications', icon: FileClock });
     navItems.push({ to: '/forms', label: 'Forms & Certs', icon: FileText });
     navItems.push({ to: '/survey', label: 'Activity Survey', icon: ClipboardList });
+    navItems.push({ to: '/student-series-exam', label: 'Series Exams', icon: FileText });
   }
   const handleLogout = async () => {
     try {
